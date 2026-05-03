@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Dự Đoán Tài Xỉu</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <style>
@@ -25,19 +27,29 @@
  touch-action:manipulation;
 }
 
-html,body{
+html{
  width:100%;
  height:100%;
- background:#000;
+ position:fixed;
  overflow:hidden;
+ background:#000;
+}
+
+body{
+ width:100%;
+ height:100%;
+ position:fixed;
+ overflow:hidden;
+ background:#000;
  color:#e6e6eb;
  touch-action:pan-x pan-y;
 }
 
 /* ================= IFRAME ================= */
 #betFrame{
- position:absolute;
- inset:0;
+ position:fixed;
+ top:0;
+ left:0;
  width:100%;
  height:100%;
  border:none;
@@ -321,6 +333,40 @@ html,body{
 <button id="menuBtn">☰</button>
 
 <script>
+// ===== KHÓA MÀN HÌNH NẰM NGANG =====
+if (screen.orientation && screen.orientation.lock) {
+ screen.orientation.lock('landscape').catch(err => {
+  console.log('Orientation lock not supported:', err);
+ });
+}
+
+// ===== FIX VIEWPORT HEIGHT =====
+function setViewportHeight() {
+ const vh = window.innerHeight * 0.01;
+ document.documentElement.style.setProperty('--vh', `${vh}px`);
+ document.body.style.height = window.innerHeight + 'px';
+ document.documentElement.style.height = window.innerHeight + 'px';
+}
+
+setViewportHeight();
+window.addEventListener('resize', setViewportHeight);
+window.addEventListener('orientationchange', function() {
+ setTimeout(setViewportHeight, 100);
+});
+
+// ===== PREVENT SCROLL =====
+document.body.addEventListener('touchmove', function(e) {
+ if (!e.target.closest('.tool')) {
+  e.preventDefault();
+ }
+}, {passive: false});
+
+document.addEventListener('touchmove', function(e) {
+ if (!e.target.closest('.tool') && !e.target.closest('#menuBtn')) {
+  e.preventDefault();
+ }
+}, {passive: false});
+
 // ===== DISABLE DOUBLE TAP ZOOM =====
 let lastTouchEnd = 0;
 document.addEventListener('touchend', function(e) {
@@ -340,6 +386,7 @@ let totalPredictions = parseInt(localStorage.getItem('totalPredictions')) || 0;
 // ===== INIT =====
 window.onload = function() {
  updateDisplay();
+ setViewportHeight();
 };
 
 // ===== TOGGLE TOOL =====
