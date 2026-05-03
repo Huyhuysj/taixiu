@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Dự Đoán Tài Xỉu</title>
+<title>Dự Đoán Tài Xỉu MD5</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -45,7 +45,6 @@ body{
  touch-action:pan-x pan-y;
 }
 
-/* ================= IFRAME ================= */
 #betFrame{
  position:fixed;
  top:0;
@@ -57,7 +56,6 @@ body{
  pointer-events:auto;
 }
 
-/* ================= FLOAT TOOL ================= */
 #floatBox{
  position:fixed;
  top:20px;
@@ -97,7 +95,6 @@ body{
  -webkit-text-fill-color:transparent;
 }
 
-/* PREDICTION */
 .prediction{
  margin-bottom:8px;
  padding:10px;
@@ -116,8 +113,8 @@ body{
 .pred-main.tai{color:var(--tai)}
 .pred-main.xiu{color:var(--xiu)}
 .pred-sub{font-size:10px;color:#aaa;margin-top:3px}
+.pred-dice{font-size:11px;color:#999;margin-top:5px;font-weight:700}
 
-/* STATS */
 .stats{
  display:grid;
  grid-template-columns:repeat(4,1fr);
@@ -136,7 +133,6 @@ body{
 .stat-label{font-size:8px;color:#777}
 .stat-value{font-size:13px;font-weight:900;color:#fff}
 
-/* INPUT */
 .input-section{margin-bottom:8px}
 .input-section h3{font-size:12px;margin-bottom:5px;color:#aaa}
 
@@ -174,7 +170,6 @@ body{
  font-size:13px;
 }
 
-/* HISTORY */
 .history{margin-bottom:8px}
 .history h3{font-size:12px;margin-bottom:5px;color:#aaa}
 
@@ -219,7 +214,6 @@ body{
 ::-webkit-scrollbar-track{background:#111}
 ::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
 
-/* MENU BTN - CÓ THỂ DRAG */
 #menuBtn{
  position:fixed;
  bottom:20px;
@@ -244,13 +238,8 @@ body{
 
 #menuBtn.dragging{opacity:0.8}
 
-/* RESPONSIVE - MÀN HÌNH NGANG */
 @media(orientation:landscape) and (max-height:500px){
- .tool{
-  width:260px;
-  max-height:85vh;
-  padding:8px;
- }
+ .tool{width:260px;max-height:85vh;padding:8px}
  .header h2{font-size:14px}
  .pred-main{font-size:22px}
  .stats{gap:4px}
@@ -261,7 +250,6 @@ body{
  #menuBtn{width:48px;height:48px;font-size:20px}
 }
 
-/* RESPONSIVE - MOBILE NHỎ */
 @media(max-width:360px){
  .tool{width:90vw;padding:10px}
  .pred-main{font-size:22px}
@@ -271,23 +259,20 @@ body{
 </head>
 <body>
 
-<!-- IFRAME WEB -->
 <iframe id="betFrame" src="https://play.betvip.fit"></iframe>
 
-<!-- FLOAT TOOL -->
 <div id="floatBox">
  <div class="tool">
   <div class="header" id="dragHandle">
-   <h2>🎲 DỰ ĐOÁN TÀI XỈU</h2>
+   <h2>🎲 DỰ ĐOÁN TÀI XỈU MD5</h2>
   </div>
 
-  <!-- PREDICTION -->
   <div class="prediction">
    <div class="pred-main" id="predResult">Chưa có dữ liệu</div>
    <div class="pred-sub" id="predConf"></div>
+   <div class="pred-dice" id="predDice"></div>
   </div>
 
-  <!-- STATS -->
   <div class="stats">
    <div class="stat">
     <div class="stat-label">Tổng</div>
@@ -307,7 +292,6 @@ body{
    </div>
   </div>
 
-  <!-- INPUT -->
   <div class="input-section">
    <h3>📝 Nhập Kết Quả</h3>
    <div class="dice-input">
@@ -318,7 +302,6 @@ body{
    <button class="btn" onclick="addResult()">THÊM</button>
   </div>
 
-  <!-- HISTORY -->
   <div class="history">
    <h3>📊 Lịch Sử</h3>
    <div class="history-list" id="historyList">
@@ -329,7 +312,6 @@ body{
  </div>
 </div>
 
-<!-- MENU BTN -->
 <button id="menuBtn">☰</button>
 
 <script>
@@ -340,7 +322,7 @@ if (screen.orientation && screen.orientation.lock) {
  });
 }
 
-// ===== FIX VIEWPORT HEIGHT =====
+// ===== FIX VIEWPORT =====
 function setViewportHeight() {
  const vh = window.innerHeight * 0.01;
  document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -361,12 +343,6 @@ document.body.addEventListener('touchmove', function(e) {
  }
 }, {passive: false});
 
-document.addEventListener('touchmove', function(e) {
- if (!e.target.closest('.tool') && !e.target.closest('#menuBtn')) {
-  e.preventDefault();
- }
-}, {passive: false});
-
 // ===== DISABLE DOUBLE TAP ZOOM =====
 let lastTouchEnd = 0;
 document.addEventListener('touchend', function(e) {
@@ -380,6 +356,7 @@ document.addEventListener('touchend', function(e) {
 // ===== DATA =====
 let history = JSON.parse(localStorage.getItem('taixiuHistory')) || [];
 let lastPrediction = null;
+let lastPredictedDice = null;
 let correctPredictions = parseInt(localStorage.getItem('correctPredictions')) || 0;
 let totalPredictions = parseInt(localStorage.getItem('totalPredictions')) || 0;
 
@@ -389,7 +366,7 @@ window.onload = function() {
  setViewportHeight();
 };
 
-// ===== TOGGLE TOOL =====
+// ===== MENU DRAG =====
 let menuBtn = document.getElementById('menuBtn');
 let floatBox = document.getElementById('floatBox');
 let isMenuDragging = false;
@@ -454,7 +431,7 @@ function toggleTool() {
  floatBox.style.display = floatBox.style.display === 'none' ? 'block' : 'none';
 }
 
-// ===== DRAG TOOL - CHỈ KÉO TỪ HEADER =====
+// ===== TOOL DRAG =====
 let dragHandle = document.getElementById('dragHandle');
 let isToolDragging = false;
 let toolStartX, toolStartY, toolStartLeft, toolStartTop;
@@ -516,6 +493,7 @@ function addResult() {
  let sum = d1 + d2 + d3;
  let result = sum >= 11 ? 'TÀI' : 'XỈU';
 
+ // Kiểm tra dự đoán trước
  if (lastPrediction) {
   totalPredictions++;
   if (lastPrediction === result) {
@@ -525,6 +503,7 @@ function addResult() {
   localStorage.setItem('totalPredictions', totalPredictions);
  }
 
+ // Thêm vào lịch sử
  history.unshift({
   dice: [d1, d2, d3],
   sum: sum,
@@ -532,8 +511,8 @@ function addResult() {
   time: new Date().toLocaleString('vi-VN')
  });
 
- if (history.length > 200) {
-  history = history.slice(0, 200);
+ if (history.length > 500) {
+  history = history.slice(0, 500);
  }
 
  localStorage.setItem('taixiuHistory', JSON.stringify(history));
@@ -546,85 +525,158 @@ function addResult() {
  updateDisplay();
 }
 
-// ===== PREDICT =====
+// ===== THUẬT TOÁN DỰ ĐOÁN NÂNG CAO - DỰA TRÊN XÚC XẮC =====
 function predictNext() {
- if (history.length < 5) {
-  return { prediction: 'Cần ít nhất 5 ván', confidence: 0 };
+ if (history.length < 10) {
+  return { 
+   prediction: 'Cần ít nhất 10 ván', 
+   confidence: 0,
+   dice: null
+  };
  }
 
- const analysis = {
-  recent: analyzeRecent(),
-  pattern: analyzePattern(),
-  frequency: analyzeFrequency(),
-  streak: analyzeStreak(),
-  sum: analyzeSumDistribution()
- };
+ // Phân tích chi tiết từng viên xúc xắc
+ const diceAnalysis = analyzeDicePatterns();
+ const sumAnalysis = analyzeSumPatterns();
+ const resultAnalysis = analyzeResultPatterns();
+ const streakAnalysis = analyzeStreak();
+ const frequencyAnalysis = analyzeFrequency();
 
+ // Dự đoán từng viên xúc xắc
+ let predictedDice = [
+  predictDiceValue(0, diceAnalysis),
+  predictDiceValue(1, diceAnalysis),
+  predictDiceValue(2, diceAnalysis)
+ ];
+
+ let predictedSum = predictedDice[0] + predictedDice[1] + predictedDice[2];
+ let prediction = predictedSum >= 11 ? 'TÀI' : 'XỈU';
+
+ // Điều chỉnh dựa trên pattern kết quả
  let taiScore = 0;
  let xiuScore = 0;
 
- if (analysis.recent.trend === 'TÀI') taiScore += 30;
- else xiuScore += 30;
+ // 1. Dựa trên tổng dự đoán (40%)
+ if (prediction === 'TÀI') taiScore += 40;
+ else xiuScore += 40;
 
- if (analysis.pattern.next === 'TÀI') taiScore += 25;
- else if (analysis.pattern.next === 'XỈU') xiuScore += 25;
+ // 2. Pattern kết quả (25%)
+ if (resultAnalysis.nextResult === 'TÀI') taiScore += 25;
+ else if (resultAnalysis.nextResult === 'XỈU') xiuScore += 25;
 
- if (analysis.frequency.dominant === 'TÀI') taiScore += 20;
- else xiuScore += 20;
-
- if (analysis.streak.shouldBreak) {
-  if (analysis.streak.current === 'TÀI') xiuScore += 15;
-  else taiScore += 15;
+ // 3. Phá chuỗi (20%)
+ if (streakAnalysis.shouldBreak) {
+  if (streakAnalysis.current === 'TÀI') xiuScore += 20;
+  else taiScore += 20;
+ } else {
+  if (streakAnalysis.current === 'TÀI') taiScore += 20;
+  else xiuScore += 20;
  }
 
- if (analysis.sum.trend === 'TÀI') taiScore += 10;
- else xiuScore += 10;
+ // 4. Tần suất cân bằng (15%)
+ if (frequencyAnalysis.shouldBe === 'TÀI') taiScore += 15;
+ else xiuScore += 15;
 
- const prediction = taiScore > xiuScore ? 'TÀI' : 'XỈU';
+ // Quyết định cuối cùng
+ const finalPrediction = taiScore > xiuScore ? 'TÀI' : 'XỈU';
+ 
+ // Điều chỉnh xúc xắc nếu cần
+ if (finalPrediction !== prediction) {
+  // Điều chỉnh 1 viên xúc xắc để đổi kết quả
+  if (finalPrediction === 'TÀI' && predictedSum < 11) {
+   // Tăng viên có giá trị thấp nhất
+   let minIdx = predictedDice.indexOf(Math.min(...predictedDice));
+   predictedDice[minIdx] = Math.min(6, predictedDice[minIdx] + (11 - predictedSum));
+  } else if (finalPrediction === 'XỈU' && predictedSum >= 11) {
+   // Giảm viên có giá trị cao nhất
+   let maxIdx = predictedDice.indexOf(Math.max(...predictedDice));
+   predictedDice[maxIdx] = Math.max(1, predictedDice[maxIdx] - (predictedSum - 10));
+  }
+  predictedSum = predictedDice[0] + predictedDice[1] + predictedDice[2];
+ }
+
  const confidence = Math.round(Math.max(taiScore, xiuScore));
 
- lastPrediction = prediction;
- return { prediction, confidence };
+ lastPrediction = finalPrediction;
+ lastPredictedDice = predictedDice;
+ 
+ return { 
+  prediction: finalPrediction, 
+  confidence: confidence,
+  dice: predictedDice,
+  sum: predictedSum
+ };
 }
 
-function analyzeRecent() {
- const recent = history.slice(0, 10);
- const taiCount = recent.filter(h => h.result === 'TÀI').length;
- const xiuCount = recent.length - taiCount;
+// Phân tích pattern từng viên xúc xắc
+function analyzeDicePatterns() {
+ const patterns = [[], [], []]; // 3 viên xúc xắc
  
- if (taiCount > xiuCount + 3) return { trend: 'XỈU' };
- if (xiuCount > taiCount + 3) return { trend: 'TÀI' };
+ for (let i = 0; i < Math.min(history.length, 50); i++) {
+  patterns[0].push(history[i].dice[0]);
+  patterns[1].push(history[i].dice[1]);
+  patterns[2].push(history[i].dice[2]);
+ }
  
- return { trend: taiCount >= xiuCount ? 'TÀI' : 'XỈU' };
+ return patterns;
 }
 
-function analyzePattern() {
- if (history.length < 6) return { next: null };
-
- const last3 = history.slice(0, 3).map(h => h.result).join('');
+// Dự đoán giá trị viên xúc xắc
+function predictDiceValue(diceIndex, diceAnalysis) {
+ const recent = diceAnalysis[diceIndex].slice(0, 10);
  
- for (let i = 3; i < history.length - 1; i++) {
-  const pattern = history.slice(i, i + 3).map(h => h.result).join('');
-  if (pattern === last3) {
-   return { next: history[i - 1].result };
+ // Tìm pattern lặp lại
+ const last3 = recent.slice(0, 3);
+ for (let i = 3; i < recent.length - 1; i++) {
+  if (recent[i] === last3[0] && recent[i+1] === last3[1] && recent[i+2] === last3[2]) {
+   if (i > 0) return recent[i-1];
   }
  }
-
- return { next: null };
+ 
+ // Tính trung bình có trọng số (gần đây quan trọng hơn)
+ let weightedSum = 0;
+ let weightTotal = 0;
+ for (let i = 0; i < Math.min(recent.length, 10); i++) {
+  let weight = 10 - i;
+  weightedSum += recent[i] * weight;
+  weightTotal += weight;
+ }
+ 
+ let avg = Math.round(weightedSum / weightTotal);
+ 
+ // Tránh lặp lại quá nhiều
+ if (recent[0] === avg && recent[1] === avg) {
+  avg = avg === 6 ? 1 : avg + 1;
+ }
+ 
+ return Math.max(1, Math.min(6, avg));
 }
 
-function analyzeFrequency() {
- const taiCount = history.filter(h => h.result === 'TÀI').length;
- const xiuCount = history.length - taiCount;
+// Phân tích pattern tổng
+function analyzeSumPatterns() {
+ const sums = history.slice(0, 20).map(h => h.sum);
+ const avg = sums.reduce((a, b) => a + b, 0) / sums.length;
  
- const ratio = taiCount / (xiuCount || 1);
- 
- if (ratio > 1.3) return { dominant: 'XỈU' };
- if (ratio < 0.7) return { dominant: 'TÀI' };
- 
- return { dominant: taiCount >= xiuCount ? 'TÀI' : 'XỈU' };
+ return { average: avg, trend: avg > 10.5 ? 'HIGH' : 'LOW' };
 }
 
+// Phân tích pattern kết quả
+function analyzeResultPatterns() {
+ if (history.length < 6) return { nextResult: null };
+ 
+ const last3 = history.slice(0, 3).map(h => h.result).join('');
+ 
+ for (let i = 3; i < Math.min(history.length - 1, 50); i++) {
+  const pattern = history.slice(i, i + 3).map(h => h.result).join('');
+  if (pattern === last3) {
+   return { nextResult: history[i - 1].result };
+  }
+ }
+ 
+ return { nextResult: null };
+}
+
+// Phân tích chuỗi
 function analyzeStreak() {
  let streak = 1;
  const current = history[0].result;
@@ -636,7 +688,7 @@ function analyzeStreak() {
    break;
   }
  }
-
+ 
  return {
   current: current,
   length: streak,
@@ -644,30 +696,39 @@ function analyzeStreak() {
  };
 }
 
-function analyzeSumDistribution() {
- const recent = history.slice(0, 15);
- const avgSum = recent.reduce((sum, h) => sum + h.sum, 0) / recent.length;
+// Phân tích tần suất
+function analyzeFrequency() {
+ const recent = history.slice(0, 30);
+ const taiCount = recent.filter(h => h.result === 'TÀI').length;
+ const xiuCount = recent.length - taiCount;
  
- if (avgSum > 11) return { trend: 'XỈU' };
- if (avgSum < 10) return { trend: 'TÀI' };
+ const ratio = taiCount / (xiuCount || 1);
  
- return { trend: avgSum >= 10.5 ? 'TÀI' : 'XỈU' };
+ if (ratio > 1.4) return { shouldBe: 'XỈU' };
+ if (ratio < 0.6) return { shouldBe: 'TÀI' };
+ 
+ return { shouldBe: taiCount >= xiuCount ? 'XỈU' : 'TÀI' };
 }
 
 // ===== UPDATE DISPLAY =====
 function updateDisplay() {
- const { prediction, confidence } = predictNext();
+ const { prediction, confidence, dice, sum } = predictNext();
  const predResult = document.getElementById('predResult');
  const predConf = document.getElementById('predConf');
+ const predDice = document.getElementById('predDice');
  
  if (prediction === 'TÀI' || prediction === 'XỈU') {
   predResult.textContent = prediction;
   predResult.className = 'pred-main ' + (prediction === 'TÀI' ? 'tai' : 'xiu');
   predConf.textContent = `Độ tin cậy: ${confidence}%`;
+  if (dice) {
+   predDice.textContent = `Dự đoán XS: ${dice[0]}-${dice[1]}-${dice[2]} (${sum})`;
+  }
  } else {
   predResult.textContent = prediction;
   predResult.className = 'pred-main';
   predConf.textContent = '';
+  predDice.textContent = '';
  }
 
  const taiTotal = history.filter(h => h.result === 'TÀI').length;
@@ -697,6 +758,7 @@ function clearHistory() {
  if (confirm('Bạn có chắc muốn xóa toàn bộ lịch sử?')) {
   history = [];
   lastPrediction = null;
+  lastPredictedDice = null;
   correctPredictions = 0;
   totalPredictions = 0;
   localStorage.removeItem('taixiuHistory');
