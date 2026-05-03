@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>Dự Đoán Tài Xỉu</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap" rel="stylesheet">
 <style>
@@ -15,33 +16,69 @@
  --vip-glow:#7c7cff;
 }
 
-*{box-sizing:border-box;font-family:'Nunito',sans-serif;margin:0;padding:0}
-html,body{width:100%;height:100%;background:#000;overflow:hidden;color:#e6e6eb}
+*{
+ box-sizing:border-box;
+ font-family:'Nunito',sans-serif;
+ margin:0;
+ padding:0;
+ -webkit-tap-highlight-color:transparent;
+ touch-action:manipulation;
+}
+
+html,body{
+ width:100%;
+ height:100%;
+ background:#000;
+ overflow:hidden;
+ color:#e6e6eb;
+ touch-action:pan-x pan-y;
+}
 
 /* ================= IFRAME ================= */
-#betFrame{position:absolute;inset:0;width:100%;height:100%;border:none;z-index:1;pointer-events:auto}
+#betFrame{
+ position:absolute;
+ inset:0;
+ width:100%;
+ height:100%;
+ border:none;
+ z-index:1;
+ pointer-events:auto;
+}
 
 /* ================= FLOAT TOOL ================= */
 #floatBox{
- position:fixed;top:20px;left:20px;
- z-index:99999;touch-action:none;
+ position:fixed;
+ top:20px;
+ left:20px;
+ z-index:99999;
  pointer-events:auto;
+ display:none;
 }
+
 .tool{
- width:320px;
- max-width:90vw;
- max-height:85vh;
+ width:300px;
+ max-width:85vw;
+ max-height:80vh;
  background:linear-gradient(180deg,#07070d,#0c0c14);
- border-radius:18px;
- padding:14px;
+ border-radius:16px;
+ padding:12px;
  border:1px solid var(--vip-line);
- box-shadow:0 0 50px rgba(0,0,0,.95);
+ box-shadow:0 0 40px rgba(0,0,0,.95);
  overflow-y:auto;
 }
 
-.header{text-align:center;margin-bottom:10px;cursor:move;user-select:none}
+.header{
+ text-align:center;
+ margin-bottom:8px;
+ cursor:move;
+ user-select:none;
+ padding:4px;
+}
+
 .header h2{
- margin:0;font-size:18px;font-weight:800;
+ margin:0;
+ font-size:16px;
+ font-weight:800;
  letter-spacing:1px;
  background:linear-gradient(90deg,#666,#fff,#666);
  -webkit-background-clip:text;
@@ -50,136 +87,173 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;color:#e6e6eb}
 
 /* PREDICTION */
 .prediction{
- margin-bottom:10px;
- padding:12px;
- border-radius:14px;
+ margin-bottom:8px;
+ padding:10px;
+ border-radius:12px;
  background:#07070c;
  border:1px solid var(--vip-line);
  text-align:center;
 }
+
 .pred-main{
- font-size:28px;
+ font-size:26px;
  font-weight:900;
- text-shadow:0 0 16px currentColor;
+ text-shadow:0 0 12px currentColor;
 }
+
 .pred-main.tai{color:var(--tai)}
 .pred-main.xiu{color:var(--xiu)}
-.pred-sub{font-size:11px;color:#aaa;margin-top:4px}
+.pred-sub{font-size:10px;color:#aaa;margin-top:3px}
 
 /* STATS */
 .stats{
  display:grid;
  grid-template-columns:repeat(4,1fr);
- gap:6px;
- margin-bottom:10px;
+ gap:5px;
+ margin-bottom:8px;
 }
+
 .stat{
  background:#07070c;
  border:1px solid var(--vip-line);
- border-radius:10px;
- padding:6px;
+ border-radius:8px;
+ padding:5px;
  text-align:center;
 }
-.stat-label{font-size:9px;color:#777}
-.stat-value{font-size:14px;font-weight:900;color:#fff}
+
+.stat-label{font-size:8px;color:#777}
+.stat-value{font-size:13px;font-weight:900;color:#fff}
 
 /* INPUT */
-.input-section{margin-bottom:10px}
-.input-section h3{font-size:13px;margin-bottom:6px;color:#aaa}
-.dice-input{display:flex;gap:6px;margin-bottom:6px}
+.input-section{margin-bottom:8px}
+.input-section h3{font-size:12px;margin-bottom:5px;color:#aaa}
+
+.dice-input{
+ display:flex;
+ gap:5px;
+ margin-bottom:5px;
+}
+
 .input{
- flex:1;padding:8px;
- border-radius:10px;
+ flex:1;
+ padding:8px;
+ border-radius:8px;
  border:1px solid var(--vip-line);
- background:#000;color:#fff;
- font-weight:800;text-align:center;
- outline:none;font-size:15px;
+ background:#000;
+ color:#fff;
+ font-weight:800;
+ text-align:center;
+ outline:none;
+ font-size:14px;
  pointer-events:auto;
- touch-action:manipulation;
 }
 
 .btn{
- width:100%;padding:10px;
- border:none;border-radius:12px;
- font-weight:900;letter-spacing:1px;
+ width:100%;
+ padding:9px;
+ border:none;
+ border-radius:10px;
+ font-weight:900;
+ letter-spacing:1px;
  background:linear-gradient(90deg,var(--tai),var(--xiu));
- color:#000;cursor:pointer;
+ color:#000;
+ cursor:pointer;
  pointer-events:auto;
+ font-size:13px;
 }
 
 /* HISTORY */
-.history{margin-bottom:10px}
-.history h3{font-size:13px;margin-bottom:6px;color:#aaa}
+.history{margin-bottom:8px}
+.history h3{font-size:12px;margin-bottom:5px;color:#aaa}
+
 .history-list{
- max-height:150px;
+ max-height:120px;
  overflow-y:auto;
  background:#07070c;
  border:1px solid var(--vip-line);
- border-radius:10px;
- padding:6px;
+ border-radius:8px;
+ padding:5px;
 }
+
 .history-item{
  display:flex;
  justify-content:space-between;
- padding:5px 6px;
- margin-bottom:3px;
+ padding:4px 5px;
+ margin-bottom:2px;
  background:#000;
- border-radius:6px;
- font-size:12px;
+ border-radius:5px;
+ font-size:11px;
 }
+
 .history-item .dice{font-weight:800}
 .history-item .tai{color:var(--tai);font-weight:900}
 .history-item .xiu{color:var(--xiu);font-weight:900}
 
 .btn-clear{
- width:100%;padding:7px;margin-top:6px;
- border:none;border-radius:8px;
- background:#1a1a28;color:#fff;
- font-weight:700;cursor:pointer;
+ width:100%;
+ padding:6px;
+ margin-top:5px;
+ border:none;
+ border-radius:7px;
+ background:#1a1a28;
+ color:#fff;
+ font-weight:700;
+ cursor:pointer;
  pointer-events:auto;
+ font-size:11px;
 }
 
-::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:#111}
-::-webkit-scrollbar-thumb{background:#333;border-radius:5px}
+::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
 
-/* MENU BTN - LUÔN HIỂN THỊ */
+/* MENU BTN - CÓ THỂ DRAG */
 #menuBtn{
- position:fixed;bottom:20px;right:20px;
- width:56px;height:56px;border-radius:50%;
+ position:fixed;
+ bottom:20px;
+ right:20px;
+ width:54px;
+ height:54px;
+ border-radius:50%;
  border:2px solid var(--vip-line);
- background:#000;color:#fff;
- font-size:24px;font-weight:900;
+ background:linear-gradient(135deg,#f093fb,#f5576c);
+ color:#fff;
+ font-size:22px;
+ font-weight:900;
  z-index:999999;
- box-shadow:0 0 30px rgba(0,0,0,.9);
- cursor:pointer;
+ box-shadow:0 0 25px rgba(0,0,0,.9);
+ cursor:move;
  pointer-events:auto;
  display:flex;
  align-items:center;
  justify-content:center;
+ user-select:none;
 }
+
+#menuBtn.dragging{opacity:0.8}
 
 /* RESPONSIVE - MÀN HÌNH NGANG */
 @media(orientation:landscape) and (max-height:500px){
  .tool{
-  width:280px;
-  max-height:90vh;
-  padding:10px;
+  width:260px;
+  max-height:85vh;
+  padding:8px;
  }
- .header h2{font-size:16px}
- .pred-main{font-size:24px}
+ .header h2{font-size:14px}
+ .pred-main{font-size:22px}
  .stats{gap:4px}
  .stat{padding:4px}
- .stat-value{font-size:12px}
- .history-list{max-height:100px}
+ .stat-value{font-size:11px}
+ .history-list{max-height:80px}
  #floatBox{top:10px;left:10px}
+ #menuBtn{width:48px;height:48px;font-size:20px}
 }
 
 /* RESPONSIVE - MOBILE NHỎ */
-@media(max-width:380px){
- .tool{width:95vw;padding:10px}
- .pred-main{font-size:24px}
- .stat-value{font-size:12px}
+@media(max-width:360px){
+ .tool{width:90vw;padding:10px}
+ .pred-main{font-size:22px}
+ .stat-value{font-size:11px}
 }
 </style>
 </head>
@@ -189,7 +263,7 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;color:#e6e6eb}
 <iframe id="betFrame" src="https://play.betvip.fit"></iframe>
 
 <!-- FLOAT TOOL -->
-<div id="floatBox" style="display:none">
+<div id="floatBox">
  <div class="tool">
   <div class="header" id="dragHandle">
    <h2>🎲 DỰ ĐOÁN TÀI XỈU</h2>
@@ -204,7 +278,7 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;color:#e6e6eb}
   <!-- STATS -->
   <div class="stats">
    <div class="stat">
-    <div class="stat-label">Tổng ván</div>
+    <div class="stat-label">Tổng</div>
     <div class="stat-value" id="totalGames">0</div>
    </div>
    <div class="stat">
@@ -216,7 +290,7 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;color:#e6e6eb}
     <div class="stat-value" id="xiuCount">0</div>
    </div>
    <div class="stat">
-    <div class="stat-label">Chính xác</div>
+    <div class="stat-label">Đúng</div>
     <div class="stat-value" id="accuracy">0%</div>
    </div>
   </div>
@@ -225,28 +299,38 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;color:#e6e6eb}
   <div class="input-section">
    <h3>📝 Nhập Kết Quả</h3>
    <div class="dice-input">
-    <input type="number" class="input" id="d1" min="1" max="6" placeholder="XS1" inputmode="numeric">
-    <input type="number" class="input" id="d2" min="1" max="6" placeholder="XS2" inputmode="numeric">
-    <input type="number" class="input" id="d3" min="1" max="6" placeholder="XS3" inputmode="numeric">
+    <input type="number" class="input" id="d1" min="1" max="6" placeholder="1" inputmode="numeric">
+    <input type="number" class="input" id="d2" min="1" max="6" placeholder="2" inputmode="numeric">
+    <input type="number" class="input" id="d3" min="1" max="6" placeholder="3" inputmode="numeric">
    </div>
-   <button class="btn" onclick="addResult()">THÊM KẾT QUẢ</button>
+   <button class="btn" onclick="addResult()">THÊM</button>
   </div>
 
   <!-- HISTORY -->
   <div class="history">
-   <h3>📊 Lịch Sử (20 ván gần nhất)</h3>
+   <h3>📊 Lịch Sử</h3>
    <div class="history-list" id="historyList">
-    <div style="text-align:center;color:#555;padding:15px;font-size:11px">Chưa có lịch sử</div>
+    <div style="text-align:center;color:#555;padding:12px;font-size:10px">Chưa có lịch sử</div>
    </div>
-   <button class="btn-clear" onclick="clearHistory()">Xóa Lịch Sử</button>
+   <button class="btn-clear" onclick="clearHistory()">Xóa</button>
   </div>
  </div>
 </div>
 
 <!-- MENU BTN -->
-<button id="menuBtn" onclick="toggleTool()">☰</button>
+<button id="menuBtn">☰</button>
 
 <script>
+// ===== DISABLE DOUBLE TAP ZOOM =====
+let lastTouchEnd = 0;
+document.addEventListener('touchend', function(e) {
+ const now = Date.now();
+ if (now - lastTouchEnd <= 300) {
+  e.preventDefault();
+ }
+ lastTouchEnd = now;
+}, false);
+
 // ===== DATA =====
 let history = JSON.parse(localStorage.getItem('taixiuHistory')) || [];
 let lastPrediction = null;
@@ -259,41 +343,99 @@ window.onload = function() {
 };
 
 // ===== TOGGLE TOOL =====
-function toggleTool() {
- const box = document.getElementById('floatBox');
- box.style.display = box.style.display === 'none' ? 'block' : 'none';
-}
-
-// ===== DRAG TOOL - CHỈ KÉO TỪ HEADER =====
+let menuBtn = document.getElementById('menuBtn');
 let floatBox = document.getElementById('floatBox');
-let dragHandle = document.getElementById('dragHandle');
-let isDragging = false;
-let startX, startY, startLeft, startTop;
+let isMenuDragging = false;
+let menuStartX, menuStartY, menuStartLeft, menuStartTop;
+let menuHasMoved = false;
 
-dragHandle.addEventListener('mousedown', startDrag);
-dragHandle.addEventListener('touchstart', startDrag, {passive: false});
+menuBtn.addEventListener('mousedown', startMenuDrag);
+menuBtn.addEventListener('touchstart', startMenuDrag, {passive: false});
 
-function startDrag(e) {
- isDragging = true;
+function startMenuDrag(e) {
+ isMenuDragging = true;
+ menuHasMoved = false;
  const touch = e.touches ? e.touches[0] : e;
- startX = touch.clientX;
- startY = touch.clientY;
- startLeft = floatBox.offsetLeft;
- startTop = floatBox.offsetTop;
+ menuStartX = touch.clientX;
+ menuStartY = touch.clientY;
+ menuStartLeft = menuBtn.offsetLeft;
+ menuStartTop = menuBtn.offsetTop;
+ menuBtn.classList.add('dragging');
  e.preventDefault();
 }
 
-document.addEventListener('mousemove', drag);
-document.addEventListener('touchmove', drag, {passive: false});
+document.addEventListener('mousemove', dragMenu);
+document.addEventListener('touchmove', dragMenu, {passive: false});
 
-function drag(e) {
- if (!isDragging) return;
+function dragMenu(e) {
+ if (!isMenuDragging) return;
  const touch = e.touches ? e.touches[0] : e;
- const deltaX = touch.clientX - startX;
- const deltaY = touch.clientY - startY;
+ const deltaX = touch.clientX - menuStartX;
+ const deltaY = touch.clientY - menuStartY;
  
- let newLeft = startLeft + deltaX;
- let newTop = startTop + deltaY;
+ if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+  menuHasMoved = true;
+ }
+ 
+ let newLeft = menuStartLeft + deltaX;
+ let newTop = menuStartTop + deltaY;
+ 
+ newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - menuBtn.offsetWidth));
+ newTop = Math.max(0, Math.min(newTop, window.innerHeight - menuBtn.offsetHeight));
+ 
+ menuBtn.style.left = newLeft + 'px';
+ menuBtn.style.top = newTop + 'px';
+ menuBtn.style.right = 'auto';
+ menuBtn.style.bottom = 'auto';
+ e.preventDefault();
+}
+
+document.addEventListener('mouseup', endMenuDrag);
+document.addEventListener('touchend', endMenuDrag);
+
+function endMenuDrag() {
+ if (isMenuDragging) {
+  menuBtn.classList.remove('dragging');
+  if (!menuHasMoved) {
+   toggleTool();
+  }
+  isMenuDragging = false;
+ }
+}
+
+function toggleTool() {
+ floatBox.style.display = floatBox.style.display === 'none' ? 'block' : 'none';
+}
+
+// ===== DRAG TOOL - CHỈ KÉO TỪ HEADER =====
+let dragHandle = document.getElementById('dragHandle');
+let isToolDragging = false;
+let toolStartX, toolStartY, toolStartLeft, toolStartTop;
+
+dragHandle.addEventListener('mousedown', startToolDrag);
+dragHandle.addEventListener('touchstart', startToolDrag, {passive: false});
+
+function startToolDrag(e) {
+ isToolDragging = true;
+ const touch = e.touches ? e.touches[0] : e;
+ toolStartX = touch.clientX;
+ toolStartY = touch.clientY;
+ toolStartLeft = floatBox.offsetLeft;
+ toolStartTop = floatBox.offsetTop;
+ e.preventDefault();
+}
+
+document.addEventListener('mousemove', dragTool);
+document.addEventListener('touchmove', dragTool, {passive: false});
+
+function dragTool(e) {
+ if (!isToolDragging) return;
+ const touch = e.touches ? e.touches[0] : e;
+ const deltaX = touch.clientX - toolStartX;
+ const deltaY = touch.clientY - toolStartY;
+ 
+ let newLeft = toolStartLeft + deltaX;
+ let newTop = toolStartTop + deltaY;
  
  newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - floatBox.offsetWidth));
  newTop = Math.max(0, Math.min(newTop, window.innerHeight - floatBox.offsetHeight));
@@ -303,17 +445,14 @@ function drag(e) {
  e.preventDefault();
 }
 
-document.addEventListener('mouseup', () => isDragging = false);
-document.addEventListener('touchend', () => isDragging = false);
+document.addEventListener('mouseup', () => isToolDragging = false);
+document.addEventListener('touchend', () => isToolDragging = false);
 
 // ===== PREVENT INPUT DRAG =====
 const inputs = document.querySelectorAll('.input');
 inputs.forEach(input => {
  input.addEventListener('mousedown', e => e.stopPropagation());
  input.addEventListener('touchstart', e => e.stopPropagation());
- input.addEventListener('focus', function() {
-  this.style.pointerEvents = 'auto';
- });
 });
 
 // ===== ADD RESULT =====
@@ -495,7 +634,7 @@ function updateDisplay() {
 
  const historyList = document.getElementById('historyList');
  if (history.length === 0) {
-  historyList.innerHTML = '<div style="text-align:center;color:#555;padding:15px;font-size:11px">Chưa có lịch sử</div>';
+  historyList.innerHTML = '<div style="text-align:center;color:#555;padding:12px;font-size:10px">Chưa có lịch sử</div>';
  } else {
   historyList.innerHTML = history.slice(0, 20).map((item, index) => `
    <div class="history-item">
@@ -526,16 +665,6 @@ document.getElementById('d3').addEventListener('keypress', function(e) {
   addResult();
  }
 });
-
-// ===== ENSURE MENU ALWAYS VISIBLE =====
-setInterval(() => {
- const menuBtn = document.getElementById('menuBtn');
- if (menuBtn) {
-  menuBtn.style.position = 'fixed';
-  menuBtn.style.zIndex = '999999';
-  menuBtn.style.pointerEvents = 'auto';
- }
-}, 1000);
 </script>
 </body>
 </html>
