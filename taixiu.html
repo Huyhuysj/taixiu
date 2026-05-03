@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Dự Đoán Tài Xỉu</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+ --tai:#ff3b3b;
+ --xiu:#2dff8f;
+ --vip-bg:#050507;
+ --vip-panel:#0b0b12;
+ --vip-line:#1a1a28;
+ --vip-glow:#7c7cff;
+}
+
+*{box-sizing:border-box;font-family:'Nunito',sans-serif;margin:0;padding:0}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;color:#e6e6eb}
+
+/* ================= IFRAME ================= */
+#betFrame{position:absolute;inset:0;width:100%;height:100%;border:none;z-index:1;pointer-events:auto}
+
+/* ================= FLOAT TOOL ================= */
+#floatBox{
+ position:fixed;top:20px;left:20px;
+ z-index:99999;touch-action:none;
+ pointer-events:auto;
+}
+.tool{
+ width:320px;
+ max-width:90vw;
+ max-height:85vh;
+ background:linear-gradient(180deg,#07070d,#0c0c14);
+ border-radius:18px;
+ padding:14px;
+ border:1px solid var(--vip-line);
+ box-shadow:0 0 50px rgba(0,0,0,.95);
+ overflow-y:auto;
+}
+
+.header{text-align:center;margin-bottom:10px;cursor:move;user-select:none}
+.header h2{
+ margin:0;font-size:18px;font-weight:800;
+ letter-spacing:1px;
+ background:linear-gradient(90deg,#666,#fff,#666);
+ -webkit-background-clip:text;
+ -webkit-text-fill-color:transparent;
+}
+
+/* PREDICTION */
+.prediction{
+ margin-bottom:10px;
+ padding:12px;
+ border-radius:14px;
+ background:#07070c;
+ border:1px solid var(--vip-line);
+ text-align:center;
+}
+.pred-main{
+ font-size:28px;
+ font-weight:900;
+ text-shadow:0 0 16px currentColor;
+}
+.pred-main.tai{color:var(--tai)}
+.pred-main.xiu{color:var(--xiu)}
+.pred-sub{font-size:11px;color:#aaa;margin-top:4px}
+
+/* STATS */
+.stats{
+ display:grid;
+ grid-template-columns:repeat(4,1fr);
+ gap:6px;
+ margin-bottom:10px;
+}
+.stat{
+ background:#07070c;
+ border:1px solid var(--vip-line);
+ border-radius:10px;
+ padding:6px;
+ text-align:center;
+}
+.stat-label{font-size:9px;color:#777}
+.stat-value{font-size:14px;font-weight:900;color:#fff}
+
+/* INPUT */
+.input-section{margin-bottom:10px}
+.input-section h3{font-size:13px;margin-bottom:6px;color:#aaa}
+.dice-input{display:flex;gap:6px;margin-bottom:6px}
+.input{
+ flex:1;padding:8px;
+ border-radius:10px;
+ border:1px solid var(--vip-line);
+ background:#000;color:#fff;
+ font-weight:800;text-align:center;
+ outline:none;font-size:15px;
+ pointer-events:auto;
+ touch-action:manipulation;
+}
+
+.btn{
+ width:100%;padding:10px;
+ border:none;border-radius:12px;
+ font-weight:900;letter-spacing:1px;
+ background:linear-gradient(90deg,var(--tai),var(--xiu));
+ color:#000;cursor:pointer;
+ pointer-events:auto;
+}
+
+/* HISTORY */
+.history{margin-bottom:10px}
+.history h3{font-size:13px;margin-bottom:6px;color:#aaa}
+.history-list{
+ max-height:150px;
+ overflow-y:auto;
+ background:#07070c;
+ border:1px solid var(--vip-line);
+ border-radius:10px;
+ padding:6px;
+}
+.history-item{
+ display:flex;
+ justify-content:space-between;
+ padding:5px 6px;
+ margin-bottom:3px;
+ background:#000;
+ border-radius:6px;
+ font-size:12px;
+}
+.history-item .dice{font-weight:800}
+.history-item .tai{color:var(--tai);font-weight:900}
+.history-item .xiu{color:var(--xiu);font-weight:900}
+
+.btn-clear{
+ width:100%;padding:7px;margin-top:6px;
+ border:none;border-radius:8px;
+ background:#1a1a28;color:#fff;
+ font-weight:700;cursor:pointer;
+ pointer-events:auto;
+}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:#111}
+::-webkit-scrollbar-thumb{background:#333;border-radius:5px}
+
+/* MENU BTN - LUÔN HIỂN THỊ */
+#menuBtn{
+ position:fixed;bottom:20px;right:20px;
+ width:56px;height:56px;border-radius:50%;
+ border:2px solid var(--vip-line);
+ background:#000;color:#fff;
+ font-size:24px;font-weight:900;
+ z-index:999999;
+ box-shadow:0 0 30px rgba(0,0,0,.9);
+ cursor:pointer;
+ pointer-events:auto;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+}
+
+/* RESPONSIVE - MÀN HÌNH NGANG */
+@media(orientation:landscape) and (max-height:500px){
+ .tool{
+  width:280px;
+  max-height:90vh;
+  padding:10px;
+ }
+ .header h2{font-size:16px}
+ .pred-main{font-size:24px}
+ .stats{gap:4px}
+ .stat{padding:4px}
+ .stat-value{font-size:12px}
+ .history-list{max-height:100px}
+ #floatBox{top:10px;left:10px}
+}
+
+/* RESPONSIVE - MOBILE NHỎ */
+@media(max-width:380px){
+ .tool{width:95vw;padding:10px}
+ .pred-main{font-size:24px}
+ .stat-value{font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- IFRAME WEB -->
+<iframe id="betFrame" src="https://play.betvip.fit"></iframe>
+
+<!-- FLOAT TOOL -->
+<div id="floatBox" style="display:none">
+ <div class="tool">
+  <div class="header" id="dragHandle">
+   <h2>🎲 DỰ ĐOÁN TÀI XỈU</h2>
+  </div>
+
+  <!-- PREDICTION -->
+  <div class="prediction">
+   <div class="pred-main" id="predResult">Chưa có dữ liệu</div>
+   <div class="pred-sub" id="predConf"></div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+   <div class="stat">
+    <div class="stat-label">Tổng ván</div>
+    <div class="stat-value" id="totalGames">0</div>
+   </div>
+   <div class="stat">
+    <div class="stat-label">Tài</div>
+    <div class="stat-value" id="taiCount">0</div>
+   </div>
+   <div class="stat">
+    <div class="stat-label">Xỉu</div>
+    <div class="stat-value" id="xiuCount">0</div>
+   </div>
+   <div class="stat">
+    <div class="stat-label">Chính xác</div>
+    <div class="stat-value" id="accuracy">0%</div>
+   </div>
+  </div>
+
+  <!-- INPUT -->
+  <div class="input-section">
+   <h3>📝 Nhập Kết Quả</h3>
+   <div class="dice-input">
+    <input type="number" class="input" id="d1" min="1" max="6" placeholder="XS1" inputmode="numeric">
+    <input type="number" class="input" id="d2" min="1" max="6" placeholder="XS2" inputmode="numeric">
+    <input type="number" class="input" id="d3" min="1" max="6" placeholder="XS3" inputmode="numeric">
+   </div>
+   <button class="btn" onclick="addResult()">THÊM KẾT QUẢ</button>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="history">
+   <h3>📊 Lịch Sử (20 ván gần nhất)</h3>
+   <div class="history-list" id="historyList">
+    <div style="text-align:center;color:#555;padding:15px;font-size:11px">Chưa có lịch sử</div>
+   </div>
+   <button class="btn-clear" onclick="clearHistory()">Xóa Lịch Sử</button>
+  </div>
+ </div>
+</div>
+
+<!-- MENU BTN -->
+<button id="menuBtn" onclick="toggleTool()">☰</button>
+
+<script>
+// ===== DATA =====
+let history = JSON.parse(localStorage.getItem('taixiuHistory')) || [];
+let lastPrediction = null;
+let correctPredictions = parseInt(localStorage.getItem('correctPredictions')) || 0;
+let totalPredictions = parseInt(localStorage.getItem('totalPredictions')) || 0;
+
+// ===== INIT =====
+window.onload = function() {
+ updateDisplay();
+};
+
+// ===== TOGGLE TOOL =====
+function toggleTool() {
+ const box = document.getElementById('floatBox');
+ box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+// ===== DRAG TOOL - CHỈ KÉO TỪ HEADER =====
+let floatBox = document.getElementById('floatBox');
+let dragHandle = document.getElementById('dragHandle');
+let isDragging = false;
+let startX, startY, startLeft, startTop;
+
+dragHandle.addEventListener('mousedown', startDrag);
+dragHandle.addEventListener('touchstart', startDrag, {passive: false});
+
+function startDrag(e) {
+ isDragging = true;
+ const touch = e.touches ? e.touches[0] : e;
+ startX = touch.clientX;
+ startY = touch.clientY;
+ startLeft = floatBox.offsetLeft;
+ startTop = floatBox.offsetTop;
+ e.preventDefault();
+}
+
+document.addEventListener('mousemove', drag);
+document.addEventListener('touchmove', drag, {passive: false});
+
+function drag(e) {
+ if (!isDragging) return;
+ const touch = e.touches ? e.touches[0] : e;
+ const deltaX = touch.clientX - startX;
+ const deltaY = touch.clientY - startY;
+ 
+ let newLeft = startLeft + deltaX;
+ let newTop = startTop + deltaY;
+ 
+ newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - floatBox.offsetWidth));
+ newTop = Math.max(0, Math.min(newTop, window.innerHeight - floatBox.offsetHeight));
+ 
+ floatBox.style.left = newLeft + 'px';
+ floatBox.style.top = newTop + 'px';
+ e.preventDefault();
+}
+
+document.addEventListener('mouseup', () => isDragging = false);
+document.addEventListener('touchend', () => isDragging = false);
+
+// ===== PREVENT INPUT DRAG =====
+const inputs = document.querySelectorAll('.input');
+inputs.forEach(input => {
+ input.addEventListener('mousedown', e => e.stopPropagation());
+ input.addEventListener('touchstart', e => e.stopPropagation());
+ input.addEventListener('focus', function() {
+  this.style.pointerEvents = 'auto';
+ });
+});
+
+// ===== ADD RESULT =====
+function addResult() {
+ let d1 = parseInt(document.getElementById('d1').value);
+ let d2 = parseInt(document.getElementById('d2').value);
+ let d3 = parseInt(document.getElementById('d3').value);
+
+ if (!d1 || !d2 || !d3 || d1 < 1 || d1 > 6 || d2 < 1 || d2 > 6 || d3 < 1 || d3 > 6) {
+  alert('Vui lòng nhập đúng giá trị xúc xắc (1-6)!');
+  return;
+ }
+
+ let sum = d1 + d2 + d3;
+ let result = sum >= 11 ? 'TÀI' : 'XỈU';
+
+ if (lastPrediction) {
+  totalPredictions++;
+  if (lastPrediction === result) {
+   correctPredictions++;
+  }
+  localStorage.setItem('correctPredictions', correctPredictions);
+  localStorage.setItem('totalPredictions', totalPredictions);
+ }
+
+ history.unshift({
+  dice: [d1, d2, d3],
+  sum: sum,
+  result: result,
+  time: new Date().toLocaleString('vi-VN')
+ });
+
+ if (history.length > 200) {
+  history = history.slice(0, 200);
+ }
+
+ localStorage.setItem('taixiuHistory', JSON.stringify(history));
+
+ document.getElementById('d1').value = '';
+ document.getElementById('d2').value = '';
+ document.getElementById('d3').value = '';
+ document.getElementById('d1').focus();
+
+ updateDisplay();
+}
+
+// ===== PREDICT =====
+function predictNext() {
+ if (history.length < 5) {
+  return { prediction: 'Cần ít nhất 5 ván', confidence: 0 };
+ }
+
+ const analysis = {
+  recent: analyzeRecent(),
+  pattern: analyzePattern(),
+  frequency: analyzeFrequency(),
+  streak: analyzeStreak(),
+  sum: analyzeSumDistribution()
+ };
+
+ let taiScore = 0;
+ let xiuScore = 0;
+
+ if (analysis.recent.trend === 'TÀI') taiScore += 30;
+ else xiuScore += 30;
+
+ if (analysis.pattern.next === 'TÀI') taiScore += 25;
+ else if (analysis.pattern.next === 'XỈU') xiuScore += 25;
+
+ if (analysis.frequency.dominant === 'TÀI') taiScore += 20;
+ else xiuScore += 20;
+
+ if (analysis.streak.shouldBreak) {
+  if (analysis.streak.current === 'TÀI') xiuScore += 15;
+  else taiScore += 15;
+ }
+
+ if (analysis.sum.trend === 'TÀI') taiScore += 10;
+ else xiuScore += 10;
+
+ const prediction = taiScore > xiuScore ? 'TÀI' : 'XỈU';
+ const confidence = Math.round(Math.max(taiScore, xiuScore));
+
+ lastPrediction = prediction;
+ return { prediction, confidence };
+}
+
+function analyzeRecent() {
+ const recent = history.slice(0, 10);
+ const taiCount = recent.filter(h => h.result === 'TÀI').length;
+ const xiuCount = recent.length - taiCount;
+ 
+ if (taiCount > xiuCount + 3) return { trend: 'XỈU' };
+ if (xiuCount > taiCount + 3) return { trend: 'TÀI' };
+ 
+ return { trend: taiCount >= xiuCount ? 'TÀI' : 'XỈU' };
+}
+
+function analyzePattern() {
+ if (history.length < 6) return { next: null };
+
+ const last3 = history.slice(0, 3).map(h => h.result).join('');
+ 
+ for (let i = 3; i < history.length - 1; i++) {
+  const pattern = history.slice(i, i + 3).map(h => h.result).join('');
+  if (pattern === last3) {
+   return { next: history[i - 1].result };
+  }
+ }
+
+ return { next: null };
+}
+
+function analyzeFrequency() {
+ const taiCount = history.filter(h => h.result === 'TÀI').length;
+ const xiuCount = history.length - taiCount;
+ 
+ const ratio = taiCount / (xiuCount || 1);
+ 
+ if (ratio > 1.3) return { dominant: 'XỈU' };
+ if (ratio < 0.7) return { dominant: 'TÀI' };
+ 
+ return { dominant: taiCount >= xiuCount ? 'TÀI' : 'XỈU' };
+}
+
+function analyzeStreak() {
+ let streak = 1;
+ const current = history[0].result;
+ 
+ for (let i = 1; i < history.length; i++) {
+  if (history[i].result === current) {
+   streak++;
+  } else {
+   break;
+  }
+ }
+
+ return {
+  current: current,
+  length: streak,
+  shouldBreak: streak >= 4
+ };
+}
+
+function analyzeSumDistribution() {
+ const recent = history.slice(0, 15);
+ const avgSum = recent.reduce((sum, h) => sum + h.sum, 0) / recent.length;
+ 
+ if (avgSum > 11) return { trend: 'XỈU' };
+ if (avgSum < 10) return { trend: 'TÀI' };
+ 
+ return { trend: avgSum >= 10.5 ? 'TÀI' : 'XỈU' };
+}
+
+// ===== UPDATE DISPLAY =====
+function updateDisplay() {
+ const { prediction, confidence } = predictNext();
+ const predResult = document.getElementById('predResult');
+ const predConf = document.getElementById('predConf');
+ 
+ if (prediction === 'TÀI' || prediction === 'XỈU') {
+  predResult.textContent = prediction;
+  predResult.className = 'pred-main ' + (prediction === 'TÀI' ? 'tai' : 'xiu');
+  predConf.textContent = `Độ tin cậy: ${confidence}%`;
+ } else {
+  predResult.textContent = prediction;
+  predResult.className = 'pred-main';
+  predConf.textContent = '';
+ }
+
+ const taiTotal = history.filter(h => h.result === 'TÀI').length;
+ const xiuTotal = history.length - taiTotal;
+ const accuracy = totalPredictions > 0 ? Math.round((correctPredictions / totalPredictions) * 100) : 0;
+
+ document.getElementById('totalGames').textContent = history.length;
+ document.getElementById('taiCount').textContent = taiTotal;
+ document.getElementById('xiuCount').textContent = xiuTotal;
+ document.getElementById('accuracy').textContent = accuracy + '%';
+
+ const historyList = document.getElementById('historyList');
+ if (history.length === 0) {
+  historyList.innerHTML = '<div style="text-align:center;color:#555;padding:15px;font-size:11px">Chưa có lịch sử</div>';
+ } else {
+  historyList.innerHTML = history.slice(0, 20).map((item, index) => `
+   <div class="history-item">
+    <span class="dice">#${history.length - index}: ${item.dice.join('-')} (${item.sum})</span>
+    <span class="${item.result === 'TÀI' ? 'tai' : 'xiu'}">${item.result}</span>
+   </div>
+  `).join('');
+ }
+}
+
+// ===== CLEAR HISTORY =====
+function clearHistory() {
+ if (confirm('Bạn có chắc muốn xóa toàn bộ lịch sử?')) {
+  history = [];
+  lastPrediction = null;
+  correctPredictions = 0;
+  totalPredictions = 0;
+  localStorage.removeItem('taixiuHistory');
+  localStorage.removeItem('correctPredictions');
+  localStorage.removeItem('totalPredictions');
+  updateDisplay();
+ }
+}
+
+// ===== KEYBOARD =====
+document.getElementById('d3').addEventListener('keypress', function(e) {
+ if (e.key === 'Enter') {
+  addResult();
+ }
+});
+
+// ===== ENSURE MENU ALWAYS VISIBLE =====
+setInterval(() => {
+ const menuBtn = document.getElementById('menuBtn');
+ if (menuBtn) {
+  menuBtn.style.position = 'fixed';
+  menuBtn.style.zIndex = '999999';
+  menuBtn.style.pointerEvents = 'auto';
+ }
+}, 1000);
+</script>
+</body>
+</html>
